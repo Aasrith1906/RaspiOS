@@ -21,9 +21,9 @@ struct device_data get_device_data()
     
 
     #ifdef AARCH64
-        __asm volatile ("mrc p15,0,%0,c0,c0,0" : "=r" (reg));
+        __asm volatile ("mrs %0, midr_el1" : "=r" (reg));
     #else
-        asm volatile ("mrs %0, midr_el1" : "=r" (reg));
+        __asm volatile ("mrc p15,0,%0,c0,c0,0" : "=r" (reg));
     #endif
 
     switch((reg >> 4) & 0xFFF)
@@ -54,7 +54,7 @@ struct device_data get_device_data()
 
         default:
 
-            deviceData.board_type = "????";
+            deviceData.board_type = NULL;
             deviceData.mmio_address = 0x3F000000;
             break;
         
@@ -75,9 +75,9 @@ struct device_data *get_device_data_p()
     
 
     #ifdef AARCH64
-        asm volatile ("mrc p15,0,%0,c0,c0,0" : "=r" (reg));
+        __asm volatile ("mrs %0, midr_el1" : "=r" (reg));
     #else
-        asm volatile ("mrs %0, midr_el1" : "=r" (reg));
+        __asm volatile ("mrc p15,0,%0,c0,c0,0" : "=r" (reg));
     #endif
 
     switch((reg >> 4) & 0xFFF)

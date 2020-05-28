@@ -1,6 +1,6 @@
 # Don't use normal gcc, use the arm cross compiler
-TOOLCHAIN = aarch64-none-elf
-#TOOLCHAIN = arm-none-eabi
+#TOOLCHAIN = aarch64-none-elf
+TOOLCHAIN = arm-none-eabi
 CC = $(TOOLCHAIN)-gcc
 AS = $(TOOLCHAIN)-as
 LD = $(TOOLCHAIN)-ld
@@ -9,11 +9,11 @@ GDB = $(TOOLCHAIN)-gdb
 
 
 # Set any constants based on the raspberry pi model.  Version 1 has some differences to 2 and 3
-CPU = cortex-a53
-#CPU = cortex-a7
+#CPU = cortex-a53
+CPU = cortex-a7
 
 CFLAGS=  -fpic -ffreestanding  -g -std=gnu99
-ASFLAGS = -ffreestanding -g
+ASFLAGS = -mcpu=cortex-a7 -fpic -ffreestanding
 CSRCFLAGS= -O2 -Wall -Wextra
 LFLAGS= -ffreestanding -O2 -nostdlib
 
@@ -36,7 +36,7 @@ IMG_NAME=kernel
 build: $(OBJECTS) $(HEADERS)
 	$(CC) -T linker.ld -o $(IMG_NAME).elf $(LFLAGS)  $(OBJECTS) -lgcc
 	$(OBJCOPY) $(IMG_NAME).elf -O binary $(IMG_NAME).img
-	qemu-system-aarch64 -M raspi3 -serial null -serial stdio -kernel kernel.img
+	qemu-system-arm -m 256 -M raspi2 -serial stdio -kernel kernel.elf
 
 $(OBJ_DIR)/%.o: $(KER_SRC)/%.c
 	
@@ -48,7 +48,7 @@ $(OBJ_DIR)/%.o: $(KER_SRC)/$(ARCHDIR)/%.c
 
 $(OBJ_DIR)/%.o: $(KER_SRC)/%.S
 	
-	$(AS) -I$(KER_SRC) -c $< -o $@
+	$(CC) $(ASFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(COMMON_SRC)/%.c
 	
@@ -60,5 +60,5 @@ clean:
 	rm $(IMG_NAME).img
 
 run: build
-	qemu-system-aarch64 -M raspi3 -serial stdio -kernel kernel.img
+	qemu-system-aarch64 -m 256 -M raspi3 -serial stdio -kernel kernel.elf
 

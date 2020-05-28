@@ -23,26 +23,44 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     (void)x3;
     #endif
 
-    uart_init();
+    
     
     #ifndef AARCH64
     setup_tags((struct atag *)atags);
 
     memory_init((struct atag *)atags);
 
-    #else
+    uart_init();
 
-    //setup_tags((struct atag *)dtb_ptr32);
-    //memory_init((struct atag *)dtb_ptr32);
+    struct device_data *d;
+    d = get_device_data_p();
 
-    #endif
+    char *s;
 
-    uart_puts((const char *)"test");
+    s = d->board_type;
 
+    uart_puts((const char *)s);
+    
     while(1)
     {
         uart_putc(uart_getc());
     }
+
+    #else
+
+    setup_tags((struct atag *)dtb_ptr32);
+    memory_init((struct atag *)dtb_ptr32);
+
+    mini_uart_init();
+
+    mini_uart_send("test");
+
+    while(1)
+    {
+        mini_uart_send_c(mini_uart_read());
+    }
+
+    #endif  
 
 
 }
