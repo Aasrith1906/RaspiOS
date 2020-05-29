@@ -17,10 +17,6 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     #ifndef AARCH64
     (void)r0;
     (void)r1;
-    #else
-    (void)x1;
-    (void)x2;
-    (void)x3;
     #endif
 
     
@@ -31,6 +27,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     memory_init((struct atag *)atags);
 
     uart_init();
+    //mini_uart_init();
 
     struct device_data *d;
     d = get_device_data_p();
@@ -39,8 +36,8 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 
     s = d->board_type;
 
-    uart_puts((const char *)s);
-    
+    uart_puts((const char *)"test");
+
     while(1)
     {
         uart_putc(uart_getc());
@@ -51,13 +48,29 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
     setup_tags((struct atag *)dtb_ptr32);
     memory_init((struct atag *)dtb_ptr32);
 
-    mini_uart_init();
+    /*mini_uart_init();
 
     mini_uart_send("test");
 
     while(1)
     {
         mini_uart_send_c(mini_uart_read());
+    }*/
+    
+    struct device_data *d;
+    d = get_device_data_p();
+
+    char *s;
+
+    s = d->board_type;
+   
+    uart_init();
+
+    uart_puts((const char *)s);
+
+    while(1)
+    {
+        uart_putc(uart_getc());
     }
 
     #endif  

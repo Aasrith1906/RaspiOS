@@ -78,7 +78,15 @@ struct page_t *get_free_page(struct list_pages *free_pages);
 void *allocate_page(void);
 
 //allocates pages and returns as contiguous memory;
-void *allocate_pages(size_t size);
+void *k_malloc(uint32_t pages);
+
+//frees pages assigned by k_malloc()
+
+void k_free(void *mem);
+
+//malloc , allocates from heap
+
+void *malloc(size_t size);
 
 // function to free a page , ptr is the pointer returned
 void free_page(void *ptr);  
@@ -88,8 +96,6 @@ void free_page(void *ptr);
 void init_heap_s(uint32_t heap_start);
 
 //kernel malloc , use to dynamically allocate memory , returns pointer to location in memory
-
-void kmalloc(uint32_t bytes);
 
 //frees dynamically allocated memory
 

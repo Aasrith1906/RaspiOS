@@ -58,6 +58,5 @@ void memset(void *s , int c , size_t len)
     {
         *p++ = (unsigned char)c;
     }
-    return s;
 
 }

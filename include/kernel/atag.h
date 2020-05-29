@@ -99,4 +99,5 @@ void setup_initrd2_tag(struct atag *tag , uint32_t size , uint32_t start);
 void setup_mem_tag(struct atag *tag ,uint32_t start , uint32_t size);
 void setup_cmdline_tag(struct atag *tag , const char *line);
 void setup_end_tag(struct atag *tag , uint32_t size);
+
 #endif 

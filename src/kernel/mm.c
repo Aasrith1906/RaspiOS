@@ -2,7 +2,7 @@
 #include <kernel/mm.h>
 #include <kernel/atag.h>
 #include <common/standard.h>
-
+#include <kernel/uart.h>
 
 extern uint8_t __end;
 
@@ -170,3 +170,56 @@ void init_heap_s(uint32_t heap_start)
     heap_segement_start->size = HEAP_SIZE;
 
 }
+
+void k_free(void *mem)
+{
+
+    size_t num_pages = sizeof(mem)/PAGE_SIZE;
+
+    void **tmp;
+
+    *tmp = mem;
+
+    for(size_t i = 0; i<num_pages; ++i)
+    {
+        free_page(*tmp);
+
+    }
+
+}
+
+void *k_malloc(uint32_t pages)
+{
+    size_t num_pages_allocated = 0;
+
+    struct page_t *tmp_page , *start_page;
+
+    void *mem;
+    
+    start_page = get_free_page(&list_free_pages);
+
+    while(num_pages_allocated != pages)
+    {
+        tmp_page = get_free_page(&list_free_pages);
+
+        if(!tmp_page)
+        {
+
+            uart_puts("error allocating page");
+
+            k_free(mem);
+
+            return (void *)NULL;
+
+        }
+
+        tmp_page->page_flags.allocated = 1;
+        tmp_page->page_flags.kernel_page = 1;
+
+        mem = (void *)((tmp_page-start_page)*PAGE_SIZE);
+
+        num_pages_allocated+=1;
+    }
+
+}
+
