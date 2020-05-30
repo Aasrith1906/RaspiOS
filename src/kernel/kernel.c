@@ -15,8 +15,18 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
 
     #ifndef AARCH64
+    
     (void)r0;
     (void)r1;
+    
+    #else
+    
+    (void)x1;
+    (void)x2;
+    (void)x3;
+
+    (void)dtb_ptr32;
+    
     #endif
 
     
@@ -45,28 +55,22 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 
     #else
 
-    setup_tags((struct atag *)dtb_ptr32);
-    memory_init((struct atag *)dtb_ptr32);
+    memory_init();
 
-    /*mini_uart_init();
-
-    mini_uart_send("test");
-
-    while(1)
-    {
-        mini_uart_send_c(mini_uart_read());
-    }*/
-    
     struct device_data *d;
     d = get_device_data_p();
 
     char *s;
 
+    int el;
+
     s = d->board_type;
-   
+    
+    el = get_el();
+
     uart_init();
 
-    uart_puts((const char *)s);
+    u_printf("exception level is %d" , el);
 
     while(1)
     {

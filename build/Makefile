@@ -12,8 +12,8 @@ GDB = $(TOOLCHAIN)-gdb
 CPU = cortex-a53
 #CPU = cortex-a7
 
-CFLAGS=  -fpic -ffreestanding  -g -std=gnu99
-ASFLAGS = -mcpu=$(CPU) -fpic -ffreestanding
+CFLAGS=  -fpic -ffreestanding  -g -std=gnu99 -w
+ASFLAGS = -mcpu=$(CPU) -fpic -ffreestanding -MMD
 CSRCFLAGS= -O2 -Wall -Wextra
 LFLAGS= -ffreestanding -O2 -nostdlib
 
@@ -50,7 +50,7 @@ $(OBJ_DIR)/%.o: $(KER_SRC)/$(ARCHDIR)/%.c
 
 $(OBJ_DIR)/%.o: $(KER_SRC)/%.S
 	
-	$(CC) $(ASFLAGS) -c $< -o $@
+	$(CC) $(ASFLAGS) -I$(KER_HEAD) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(COMMON_SRC)/%.c
 	

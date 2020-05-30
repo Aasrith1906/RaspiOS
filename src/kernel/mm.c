@@ -3,6 +3,7 @@
 #include <kernel/atag.h>
 #include <common/standard.h>
 #include <kernel/uart.h>
+#include <kernel/kernel.h>
 
 extern uint8_t __end;
 
@@ -60,12 +61,6 @@ struct page_t *get_free_page(struct list_pages *free_pages)
 
 
 
-void erase_data(struct page_t *page , uint32_t len)
-{
-
-    memset(page , 0 , (size_t) len);
-
-}
 
 void *allocate_page(void)
 {
@@ -106,6 +101,8 @@ void free_page(void *ptr)
 }
 
 //initialising memory management and paging
+
+#ifndef AARCH64
 
 void memory_init(struct atag *tag)
 {
@@ -159,7 +156,62 @@ void memory_init(struct atag *tag)
 
     init_heap_s(heap_start);
 }   
+#else
 
+void memory_init()
+{
+    uint32_t MEMSIZE = 1024 * 1024 * 256;
+
+    uint32_t page_array_len , kernel_pages, tmp , heap_start;
+
+    
+    /*
+        uncomment line below if running on a real rpi,
+        qemu does not generate atags and simulate the actual
+        bootloader hence we cannot use the atag_get_memsize function
+    */
+
+   //uint32_t MEMSIZE = atag_get_memsize(tag);
+
+
+   num_pages = MEMSIZE/PAGE_SIZE;
+
+   page_array_len = sizeof(struct page_t) * num_pages;   
+
+   all_pages_array = (struct page_t *)&__end;
+
+   erase_data(all_pages_array , page_array_len);
+
+   kernel_pages = (uint32_t)&__end/PAGE_SIZE; 
+   
+/* 
+   since __end is allocated after kernel in linker file , page_size divided by the location of __end while
+   give us all the num of kernel_pages
+*/
+
+    for( tmp = 0; tmp < kernel_pages; tmp++)
+    {
+
+        all_pages_array[tmp].virtual_addr_mapped = tmp*PAGE_SIZE;
+        all_pages_array[tmp].page_flags.allocated = 1;
+        all_pages_array[tmp].page_flags.kernel_page = 1;
+    }
+
+    for(; tmp < page_array_len; tmp++)
+    {
+
+        all_pages_array[tmp].page_flags.allocated = 0;
+
+        append_page(&list_free_pages , &all_pages_array[tmp]);
+
+    }
+
+    heap_start = page_array_len + (uint32_t)&__end;
+
+    init_heap_s(heap_start);
+}   
+
+#endif
 
 void init_heap_s(uint32_t heap_start)
 {
@@ -170,6 +222,10 @@ void init_heap_s(uint32_t heap_start)
     heap_segement_start->size = HEAP_SIZE;
 
 }
+
+// below functions don't work just yet fml
+
+/*
 
 void k_free(void *mem)
 {
@@ -221,5 +277,13 @@ void *k_malloc(uint32_t pages)
         num_pages_allocated+=1;
     }
 
-}
+}*/
 
+
+
+void erase_data(struct page_t *page , uint32_t len)
+{
+
+    memset(page , 0 , (size_t) len);
+
+}

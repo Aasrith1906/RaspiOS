@@ -5,12 +5,15 @@
 
 #include <common/standard.h>
 #include <kernel/atag.h>
+#include <kernel/kernel.h>
 
 // size of each page
 #define PAGE_SIZE 4096
 
 //size of the heap
 #define HEAP_SIZE 1024*1024
+
+
 
 
 
@@ -60,7 +63,12 @@ struct heap_segment
 
 
 // function to initialize memory in the RPi
+
+#ifndef AARCH64
 void memory_init(struct atag *tag);
+#else
+void memory_init();
+#endif
 
 // function used to init the list of pages
 void init_list(struct list_pages *pages_list);
@@ -95,10 +103,10 @@ void free_page(void *ptr);
 
 void init_heap_s(uint32_t heap_start);
 
-//kernel malloc , use to dynamically allocate memory , returns pointer to location in memory
-
 //frees dynamically allocated memory
 
 void free(void *ptr);
+
+
 
 #endif 
