@@ -31,12 +31,12 @@ OBJECTS += $(patsubst $(COMMON_SRC)/%.c, $(OBJ_DIR)/%.o, $(COMMONSOURCES))
 OBJECTS += $(patsubst $(KER_SRC)/%.S, $(OBJ_DIR)/%.o, $(ASMSOURCES))
 HEADERS = $(wildcard $(KER_HEAD)/*.h)
 
-IMG_NAME=kernel
+IMG_NAME=kernel8
 
 build: $(OBJECTS) $(HEADERS)
 	$(CC) -T linker.ld -o $(IMG_NAME).elf $(LFLAGS)  $(OBJECTS) -lgcc
 	$(OBJCOPY) $(IMG_NAME).elf -O binary $(IMG_NAME).img
-	qemu-system-aarch64 -M raspi3 -serial stdio -kernel kernel.elf
+	qemu-system-aarch64 -M raspi3 -serial stdio --kernel kernel8.elf
 	
 #qemu-system-arm -m 256 -M raspi2 -serial stdio -kernel kernel.elf
 

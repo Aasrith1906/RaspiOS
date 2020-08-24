@@ -52,14 +52,14 @@ struct page_t
 
 //heap list structure
 
-struct heap_segment
+typedef struct heap_segment
 {
     uint32_t is_allocated:1;
     uint32_t size;
 
     struct heap_segment *next;
     struct heap_segment *prev;
-};  
+} heap_segment_t;  
 
 
 // function to initialize memory in the RPi
@@ -85,8 +85,7 @@ struct page_t *get_free_page(struct list_pages *free_pages);
 // returns a pointer to mem
 void *allocate_page(void);
 
-//allocates pages and returns as contiguous memory;
-void *k_malloc(uint32_t pages);
+void *k_malloc(uint32_t bytes);
 
 //frees pages assigned by k_malloc()
 
@@ -103,10 +102,8 @@ void free_page(void *ptr);
 
 void init_heap_s(uint32_t heap_start);
 
-//frees dynamically allocated memory
+//memory test function both pages and dynamic heap allocation
 
-void free(void *ptr);
-
-
+void test_memory();
 
 #endif 

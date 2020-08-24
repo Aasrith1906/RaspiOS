@@ -29,6 +29,10 @@ struct device_data get_device_data()
     switch((reg >> 4) & 0xFFF)
     {
         case 0xB76: 
+            
+            #ifndef RASPI_VER
+            #define RASPI_VER 1
+            #endif 
 
             deviceData.board_type = "RPi1";
             deviceData.mmio_address = 0x20000000;
@@ -36,17 +40,29 @@ struct device_data get_device_data()
         
         case 0xC07:
 
+            #ifndef RASPI_VER
+            #define RASPI_VER 2
+            #endif 
+
             deviceData.board_type = "RPi2";
             deviceData.mmio_address = 0x3F000000;
             break;
         
         case 0xD03:
-
+            
+            #ifndef RASPI_VER
+            #define RASPI_VER 3
+            #endif
+            
             deviceData.board_type = "RPi3";
             deviceData.mmio_address = 0x3F000000;
             break;
 
         case 0xD08:
+
+            #ifndef RASPI_VER
+            #define RASPI_VER 4
+            #endif
 
             deviceData.board_type = "RPi4";
             deviceData.mmio_address = 0xFE000000;
@@ -69,7 +85,7 @@ struct device_data *get_device_data_p()
 {
     struct device_data *deviceData;
 
-    deviceData = (struct device_data *)allocate_page();
+    deviceData = (struct device_data *)k_malloc(sizeof(struct device_data *));
 
     uint32_t reg;
     
@@ -84,11 +100,19 @@ struct device_data *get_device_data_p()
     {
         case 0xB76: 
 
+            #ifndef RASPI_VER
+            #define RASPI_VER 1
+            #endif
+
             deviceData->board_type = "RPi1";
             deviceData->mmio_address = 0x20000000;
             break;
         
         case 0xC07:
+
+            #ifndef RASPI_VER
+            #define RASPI_VER 2
+            #endif
 
             deviceData->board_type = "RPi2";
             deviceData->mmio_address = 0x3F000000;
@@ -96,11 +120,19 @@ struct device_data *get_device_data_p()
         
         case 0xD03:
 
+            #ifndef RASPI_VER
+            #define RASPI_VER 3
+            #endif
+
             deviceData->board_type = "RPi3";
             deviceData->mmio_address = 0x3F000000;
             break;
 
         case 0xD08:
+            
+            #ifndef RASPI_VER
+            #define RASPI_VER 4
+            #endif
 
             deviceData->board_type = "RPi4";
             deviceData->mmio_address = 0xFE000000;

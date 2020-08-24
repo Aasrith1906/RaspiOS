@@ -5,6 +5,7 @@
 #include <kernel/uart.h>
 #include <kernel/kernel.h>
 
+
 extern uint8_t __end;
 
 uint32_t num_pages;
@@ -13,7 +14,7 @@ static struct page_t *all_pages_array;
 
 struct list_pages list_free_pages;
 
-struct heap_segment *heap_segement_start;
+heap_segment_t *heap_segment_start;
 
 void init_list(struct list_pages *page_list)
 {
@@ -197,6 +198,7 @@ void memory_init()
         all_pages_array[tmp].page_flags.kernel_page = 1;
     }
 
+
     for(; tmp < page_array_len; tmp++)
     {
 
@@ -215,75 +217,101 @@ void memory_init()
 
 void init_heap_s(uint32_t heap_start)
 {
-    heap_segement_start = (struct heap_segment *)heap_start;
+    heap_segment_start = (heap_segment_t *)heap_start;
     
-    memset(heap_segement_start , 0 , sizeof(struct heap_segment));
+    memset(heap_segment_start , 0 , sizeof(struct heap_segment));
 
-    heap_segement_start->size = HEAP_SIZE;
+    heap_segment_start->size = HEAP_SIZE;
 
 }
 
-// below functions don't work just yet fml
-
-/*
-
-void k_free(void *mem)
+void *k_malloc(uint32_t bytes)
 {
+    heap_segment_t *curr, *best = NULL;
 
-    size_t num_pages = sizeof(mem)/PAGE_SIZE;
+    uint32_t diff , best_diff = 0x7fffffff;
 
-    void **tmp;
+    bytes+= sizeof(struct heap_segment);
 
-    *tmp = mem;
+    bytes+= bytes%16 ? 16 - (bytes%16) : 0;
 
-    for(size_t i = 0; i<num_pages; ++i)
+    for(curr = heap_segment_start; curr!=NULL; curr = curr->next)
     {
-        free_page(*tmp);
+        diff = curr->size - bytes;
 
-    }
-
-}
-
-void *k_malloc(uint32_t pages)
-{
-    size_t num_pages_allocated = 0;
-
-    struct page_t *tmp_page , *start_page;
-
-    void *mem;
-    
-    start_page = get_free_page(&list_free_pages);
-
-    while(num_pages_allocated != pages)
-    {
-        tmp_page = get_free_page(&list_free_pages);
-
-        if(!tmp_page)
+        if(curr->is_allocated == 0 && diff < best_diff && diff > 0)
         {
 
-            uart_puts("error allocating page");
-
-            k_free(mem);
-
-            return (void *)NULL;
+            best_diff = diff;
+            best = curr;
 
         }
-
-        tmp_page->page_flags.allocated = 1;
-        tmp_page->page_flags.kernel_page = 1;
-
-        mem = (void *)((tmp_page-start_page)*PAGE_SIZE);
-
-        num_pages_allocated+=1;
     }
 
-}*/
+    if(best==NULL)
+    {
+        u_printf("no suitable free memory !!");
+        return NULL;
+    }   
 
+    if(best_diff > (int)2*sizeof(struct heap_segment))
+    {
+        erase_data((uint32_t *)&best + bytes, sizeof(struct heap_segment));
 
+        curr = best->next;
+        best->next = (uint32_t *)best + bytes;
+
+        best->next->next = curr;
+        best->next->prev = best;
+
+        best->next->size = best->size - bytes;
+        best->size = bytes;
+        
+        best->is_allocated = 1;
+
+        return best+1;
+    }
+
+}
+
+void k_free(void *ptr)
+{
+    heap_segment_t *seg = (heap_segment_t *)ptr - sizeof(heap_segment_t);
+
+    seg->is_allocated = 0;
+
+    while(seg->prev != NULL && !seg->prev->is_allocated)
+    {
+        seg->prev->next = seg->next;
+        seg->prev->size += seg->size;
+        seg = seg->prev;
+    }
+
+    while(seg->next != NULL && !seg->next->is_allocated)
+    {
+        seg->size += seg->next->size;
+        seg->next = seg->next->next;
+    }
+
+}
 
 void erase_data(struct page_t *page , uint32_t len)
 {
 
     memset(page , 0 , (size_t) len);
+
+}
+
+void test_memory()
+{
+
+    void *mem1 , *mem2 , *page1;
+
+    mem1 = k_malloc(8);
+    mem2 = k_malloc(16);
+    page1 = allocate_page();
+
+    u_printf("%x , %x , %x" , mem1 , mem2 , page1);
+
 
 }
