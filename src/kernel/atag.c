@@ -3,9 +3,7 @@
 #define DRAM_BASE 0x10000000
 #define INITRD_LOAD_ADDRESS DRAM_BASE + 0x800000
 
-/* the fucking code is very repetitive and dog shit , 
-fix it or else you are a useless cunt Aasrith of the future , u prick , fuck you
-*/
+
 
 uint32_t atag_get_memsize(struct atag *tag)
 {
